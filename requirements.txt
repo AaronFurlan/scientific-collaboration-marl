@@ -1,0 +1,11 @@
+gymnasium
+pandas
+pettingzoo
+scipy
+scikit-optimize
+SALib
+seaborn
+pyarrow
+ipykernel
+networkx
+statsmodels

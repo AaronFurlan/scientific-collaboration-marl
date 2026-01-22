@@ -1,0 +1,18 @@
+{
+  "S1": {
+    "acceptance_threshold": -0.010051465544109583,
+    "orthodox_novelty_threshold": -9.43681128216466e-17,
+    "careerist_prestige_threshold": 0.013089551509317107,
+    "mass_producer_effort_threshold": 0.15845800920880684,
+    "max_rewardless_steps": -0.24261814009311164,
+    "policy_aligned_in_group": 8.414591383093517e-17
+  },
+  "ST": {
+    "acceptance_threshold": 0.020522277992590186,
+    "orthodox_novelty_threshold": 7.901015561028022e-31,
+    "careerist_prestige_threshold": 0.0047301082432850946,
+    "mass_producer_effort_threshold": 1.1234771877841467,
+    "max_rewardless_steps": 0.8021398835943775,
+    "policy_aligned_in_group": 4.543083947591112e-30
+  }
+}
