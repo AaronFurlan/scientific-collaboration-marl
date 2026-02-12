@@ -1,4 +1,4 @@
-# Scinetific Knowledge Production Simulation - Quick Start
+# Scientific Knowledge Production Simulation - Quick Start
 
 ## Prerequisites
 - Python 3.9+
@@ -11,7 +11,7 @@ pip install -r requirements.txt
 ```
 
 ## Run the Simulation
-Runs a the simulation for 1 random seed and three reward functions and saves the results.
+Runs the simulation for one random seed and three reward functions and saves the results.
 
 ```bash
 python run_policy_simulation.py
