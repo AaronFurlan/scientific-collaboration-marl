@@ -1,0 +1,212 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% hsluthesisterms.sty
+%
+% (c) Lucerne University of Applied Sciences and Arts
+%
+% A small style package for HSLU theses. It defines standard terms and clauses
+% used for HSLU thesis in english and german.
+%
+% Secondly, it comprises few helpful customized commands for more standardized
+% thesis appearance.
+%
+% Created for HSLU by Ramón Christen 2025
+% 
+%   v1.0    21-03-2025:     Original version
+%   v2.0    22-09-2025:     Extensions for continuous education
+%   v2.1    29-09-2025:     Extended for WIPRO
+%   v2.2    10-10-2025:     Minor corrections for WIPRO
+%   v2.3    29-01-2026:     Updated sworn declaration
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Identification
+%%%%%%%%%%%%%%%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{hsluthesisterms}
+
+
+% Declare options
+%%%%%%%%%%%%%%%%%
+% language
+\DeclareOption{english}{\setEnglishTerms}
+\DeclareOption{german}{\setGermanTerms}
+
+% thesis level
+\DeclareOption{bachelor}{\def\thesistypecat{0}}
+\DeclareOption{master}{\def\thesistypecat{1}}
+\DeclareOption{cas}{\def\thesistypecat{2}}
+\DeclareOption{sas}{\def\thesistypecat{3}}
+\DeclareOption{wipro}{\def\thesistypecat{4}}
+
+
+
+% Preliminary definitions
+%%%%%%%%%%%%%%%%%%
+\newcommand*{\thesisTerm}[5]{%
+    \ifcase\thesistypecat\relax #1%
+    \or #2%
+    \or #3%
+    \or #4%
+    \or #5%
+    \fi
+}
+
+
+% commands for individual declarations
+%%%%%%%%%%%%%%%%
+\newcommand*{\email}[1]{\textsf{#1}}
+\newcommand*{\supervisor}[1]{\def\supervisorvar{#1}}
+\newcommand*{\city}[1]{\def\orig{#1}}
+\newcommand*{\defensedate}[1]{\def\defensedatevar{#1}}
+\newcommand*{\jury}[1]{\def\jurymembers{#1}}
+\newcommand*{\dean}[1]{\def\deanoffaculty{#1}}
+\newcommand*{\subtitle}[1]{\def\subtit{#1}}
+\newcommand*{\extexpert}[1]{\def\extexp{#1}}
+\newcommand*{\indpartner}[1]{\def\indpart{#1}}
+\newcommand*{\studyprogram}[1]{\def\studyprg{#1}}
+\newcommand*{\honornote}[1]{\def\honor{#1}}
+\newcommand*{\defencelocation}[1]{\def\defencelocation{#1}}
+\newcommand*{\acknowledgments}[1]{\def\acknowledgments{#1}}
+
+
+% Commands for terms
+%%%%%%%%%%%%%%%%
+\newcommand*{\setBachelorThesis}[1]{\def\bachelorthesis{#1}}
+\newcommand*{\setMasterThesis}[1]{\def\masterthesis{#1}}
+\newcommand*{\setCasThesis}[1]{\def\casthesis{#1}}
+\newcommand*{\setWiproThesis}[1]{\def\wiprothesis{#1}}
+
+\newcommand*{\setLogo}[1]{\def\logo{#1}}
+\newcommand*{\setUniName}[1]{\def\uniname{#1}}
+\newcommand*{\setUniCountry}[1]{\def\unicountry{#1}}
+\newcommand*{\setDepName}[1]{\def\depname{#1}}
+\newcommand*{\setAcademicTitle}[1]{\def\academictitle{#1}}
+\newcommand*{\setPresentedTo}[1]{\def\presentedto{#1}}
+\newcommand*{\setPresentedToAcGrade}[1]{\def\presentedtoacgrade{#1}}
+\newcommand*{\setBy}[1]{\def\by{#1}}
+\newcommand*{\setFrom}[1]{\def\from{#1}}
+\newcommand*{\setAcceptTxt}[1]{\def\accepttxt{#1}}
+\newcommand*{\setSignSupervisor}[1]{\def\sign@supervisor{#1}}
+\newcommand*{\setSignFacDean}[1]{\def\sign@facdean{#1}}
+\newcommand*{\setHSummary}[1]{\def\hsummary{#1}}
+
+\newcommand*{\setConsHmain}[1]{\def\cons@hmain{#1}}
+\newcommand*{\setConsHi}[1]{\def\cons@hi{#1}}
+\newcommand*{\setConsTitle}[1]{\def\cons@title{#1}}
+\newcommand*{\setConsStudent}[1]{\def\cons@student{#1}}
+\newcommand*{\setConsStudyTopic}[1]{\def\cons@studytopic{#1}}
+\newcommand*{\setConsYear}[1]{\def\cons@year{#1}}
+\newcommand*{\setConsDefYear}[1]{\def\cons@defyear{#1}}
+\newcommand*{\setConsSupervisor}[1]{\def\cons@supervisor{#1}}
+\newcommand*{\setConsExpert}[1]{\def\cons@expert{#1}}
+\newcommand*{\setConsIndPartner}[1]{\def\cons@indpartner{#1}}
+\newcommand*{\setConsHii}[1]{\def\cons@hii{#1}}
+\newcommand*{\setConsPublic}[1]{\def\cons@public{#1}}
+\newcommand*{\setConsConfidential}[1]{\def\cons@confidential{#1}}
+\newcommand*{\setConsHiii}[1]{\def\cons@hiii{#1}}
+\newcommand*{\setConsSelf}[1]{\def\cons@self{#1}}
+\newcommand*{\setConsSign}[1]{\def\cons@sign{#1}}
+\newcommand*{\setConsThanks}[1]{\def\cons@thanks{#1}}
+\newcommand*{\setConsIp}[1]{\def\cons@ip{#1}}
+
+% general terms derived from individual declaration
+\def\thesistypetxt{\thesisTerm{\bachelorthesis}{\masterthesis}{\casthesis}{\sasthesis}{\wiprothesis}}
+\def\academicgrade{\thesisTerm{Bachelor}{Master}{CAS}{SAS}{Bachelor}}
+
+
+% Declare english terms
+%%%%%%%%%%%%%%%%%%%
+\newcommand*{\setEnglishTerms}{
+    \setBachelorThesis{Bachelor Thesis}
+    \setMasterThesis{Master Thesis}
+    \setCasThesis{Transfer Arbeit}
+    \setWiproThesis{Business Project}
+    \setLogo{figs/HSLU_Logo_EN_Schwarz_cmyk.eps}
+    \setUniName{Lucerne University of Applied Sciences and Arts}
+    \setUniCountry{Switzerland}
+    \setDepName{School of Computer Science and Information Technology}
+    \setAcademicTitle{\academicgrade{} in \studyprg{}}
+    \setPresentedTo{presented to \depname{} of \uniname{}}
+    \setPresentedToAcGrade{\presentedto in consideration for the award of the academic grade of \emph{\academictitle}}
+    \setBy{by}
+    \setFrom{from}
+    \setAcceptTxt{Accepted by \depname{} of \uniname{} upon the recommendation of:}
+    \setSignSupervisor{Supervisor}
+    \setSignFacDean{Faculty Dean}
+    \setHSummary{Summary}
+    
+    \setConsHmain{Declaration}
+    \setConsHi{\thesistypetxt{} at \uniname\\[10pt] \depname}
+    \setConsTitle{Title of \thesistypetxt{}}
+    \setConsStudent{Name of Student}
+    \setConsStudyTopic{Degree Program}
+    \setConsYear{Year}
+    \setConsDefYear{Year of Graduation}
+    \setConsSupervisor{Main Advisor}
+    \setConsExpert{External Expert}
+    \setConsIndPartner{Industry partner/provider}
+    \setConsHii{Code/Thesis Classification}
+    \setConsPublic{Public (Standard)}
+    \setConsConfidential{Private}
+    \setConsHiii{Declaration}
+    \setConsSelf{I hereby declare that I have completed this work alone, independently, and without any unauthorized or external help. All cited sources, literature, and aids (in particular artificial intelligence or other instruments) have been used in compliance with copyright and data protection laws, and passages taken verbatim or in substance have been identified as such. The client's confidentiality interests have been preserved, and the intellectual property rights of the Lucerne University of Applied Sciences and Arts have been respected.}
+    \setConsSign{Place/Date, Signature}
+    \setConsThanks{Expression of thanks and gratitute}
+    \setConsIp{Intellectual property of the degree programs of the \uniname, FH Zentralschweiz, in accordance with Student Regulations: \href{https://srl.lu.ch/app/de/texts_of_law/521/versions/4065}{Studienordnung}}
+}
+
+% Declare german terms
+%%%%%%%%%%%%%%%%%%%
+\newcommand*{\setGermanTerms}{
+    \setBachelorThesis{Bachelorarbeit}
+    \setMasterThesis{Masterarbeit}
+    \setCasThesis{Transfer Arbeit}
+    \setWiproThesis{Wirtschaftsprojekt}
+    \setLogo{figs/HSLU_Logo_DE_Schwarz_cmyk.eps}
+    \setUniName{Hochschule Luzern}
+    \setUniCountry{Schweiz}
+    \setDepName{Informatik}
+    \setAcademicTitle{\academicgrade{} in \studyprg{}}
+    \setPresentedTo{vorgelegt am Departement \depname{} der \uniname{} (\unicountry)}
+    \setPresentedToAcGrade{\presentedto in Anbetracht zur Erreichung des akademischen Grades \emph{\academictitle}}
+    \setBy{von}
+    \setFrom{von}
+    \setAcceptTxt{Angenommen von \depname{} der \uniname{} (\unicountry) auf Empfehlung von:}
+    \setSignSupervisor{Betreuer}
+    \setSignFacDean{Fakultätsleiter}
+    \setHSummary{Kurzfassung}
+    
+    \setConsHmain{Erklärung}
+    \setConsHi{\thesistypetxt{} an der \uniname{} - \depname}
+    \setConsTitle{Titel}
+    \setConsStudent{Studentin/Student}
+    \setConsStudyTopic{Studiengang}
+    \setConsYear{Jahr}
+    \setConsDefYear{Abschlussjahr}
+    \setConsSupervisor{Betreuungsperson}
+    \setConsExpert{Expertenperson}
+    \setConsIndPartner{Auftraggeberin/Auftraggeber}
+    \setConsHii{Codierung/Klassifizierung der Arbeit}
+    \setConsPublic{Öffentlich (Normalfall)}
+    \setConsConfidential{Vertraulich}
+    \setConsHiii{Eidesstattliche Erklärung}
+    \setConsSelf{Ich erkläre hiermit, dass ich die vorliegende Arbeit selbständig und ohne unerlaubte fremde Hilfe angefertigt habe. Alle verwendeten Quellen, Literatur und Hilfsmittel (insbesondere künstliche Intelligenz oder sonstige verwendete Instrumente) wurden urheberrechts- und datenschutzkonform verwendet und wörtlich oder inhaltlich entnommene Stellen als solche kenntlich gemacht. Das Ver-traulichkeitsinteresse des Auftraggebers wurde gewahrt und die Urheberrechtsbestimmungen der Hochschule Luzern respektiert.}
+    \setConsSign{Ort/Datum, Unterschrift}
+    \setConsThanks{Verdankung}
+    \setConsIp{Geistiges Eigentum gemäss der \href{https://srl.lu.ch/app/de/texts_of_law/521/versions/4065}{Studienordnung} für die Ausbildung\\
+    an der \uniname, FH Zentralschweiz}
+}
+
+% set default values for options
+\setEnglishTerms
+
+\ProcessOptions\relax
+
+
+% Custom commands
+%%%%%%%%%%%%%%%%%%%%
+
+% Command to write research questions
+\newcommand*{\resq}[2]{\paragraph{}\textbf{\emph{RQ{#1}. #2}}\\}
+
