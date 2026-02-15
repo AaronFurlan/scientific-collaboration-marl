@@ -1,3 +1,26 @@
 __pycache__
 log
 .idea/
+
+# LaTeX
+thesis/*.aux
+thesis/*.log
+thesis/*.out
+thesis/*.toc
+thesis/*.synctex.gz
+thesis/*.fls
+thesis/*.fdb_latexmk
+thesis/*.bbl
+thesis/*.blg
+thesis/*.run.xml
+thesis/*.bcf
+thesis/*.pdf
+
+# RL
+wandb/
+ray_results/
+checkpoints/
+runs/
+*.pt
+*.ckpt
+*.pkl
