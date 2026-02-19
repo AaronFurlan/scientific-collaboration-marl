@@ -65,3 +65,7 @@ Run `visualizations.ipynb`to reproduce the figures.
 ## Tips
 - JSONL logs can be large; use `jq`, `tail -f`, or sample lines.
 - Commit parameter changes alongside their `*_summary.json` for reproducibility.
+
+## Overleaf workflow
+- After writing in Overleaf pull the latest version from Overleaf with `git subtree pull --prefix thesis overleaf OVERLEAF_BRANCH --squash`
+- then `git push origin main`
