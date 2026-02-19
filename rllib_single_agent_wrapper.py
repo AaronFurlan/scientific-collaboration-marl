@@ -5,7 +5,7 @@ import gymnasium as gym
 from gymnasium.spaces import Dict as GymDict, MultiBinary
 from copy import deepcopy
 
-class SingleAgentFromParallelEnv(gym.Env):
+class RLLibSingleAgentWrapper(gym.Env):
     """
     Wrap a PettingZoo ParallelEnv into a single-agent Gymnasium Env.
     - env: a pettingzoo.ParallelEnv
