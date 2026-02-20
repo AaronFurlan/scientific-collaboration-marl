@@ -9,3 +9,6 @@ pyarrow
 ipykernel
 networkx
 statsmodels
+torch
+ray[rllib]
+pytest
