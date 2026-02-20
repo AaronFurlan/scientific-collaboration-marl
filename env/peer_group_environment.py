@@ -10,6 +10,7 @@ from gymnasium.spaces import Dict as GymDict
 from gymnasium.spaces import Discrete, MultiBinary
 from pettingzoo import ParallelEnv
 from scipy.special import softmax
+import logging
 
 from .area import Area
 from .project import Project
@@ -25,17 +26,17 @@ class PeerGroupEnvironment(ParallelEnv):
 
     def __init__(
         self,
-        start_agents: int = 20,
-        max_agents: int = 80,
-        max_steps: int = 600,
-        max_peer_group_size: int = 60,
-        n_groups: int = 4,
-        n_projects_per_step: int = 1,
-        max_projects_per_agent: int = 6,
-        max_agent_age: int = 1000,
-        max_rewardless_steps: int = 50,
-        growth_rate: float = 0.04,
-        acceptance_threshold: float = 0.5,
+        start_agents: int = 20, # 20
+        max_agents: int = 80, # 80
+        max_steps: int = 600, # 600
+        max_peer_group_size: int = 60, # 60
+        n_groups: int = 4, # 4
+        n_projects_per_step: int = 1, # 1
+        max_projects_per_agent: int = 6, # 6
+        max_agent_age: int = 1000, # 1000
+        max_rewardless_steps: int = 50, # 50
+        growth_rate: float = 0.04, # 0.04
+        acceptance_threshold: float = 0.5, # 0.5
         reward_mode: str = "multiply",
         render_mode: Optional[str] = None,
     ) -> None:
@@ -167,14 +168,22 @@ class PeerGroupEnvironment(ParallelEnv):
             if len(group1 - group2) == 0 or len(group2 - group1) == 0:
                 continue
             try:
-                active_only_group1 = self.active_agents[list(group1 - group2)]
-                active_only_group2 = self.active_agents[list(group2 - group1)]
-                agent_idx1 = np.random.choice(active_only_group1)
-                agent_idx2 = np.random.choice(active_only_group2)
+                # Select agent indices that are in group1 but not in group2 and are active
+                candidates1 = np.array(list(group1 - group2), dtype=int)
+                active_candidates1 = candidates1[self.active_agents[candidates1].astype(bool)]
+
+                candidates2 = np.array(list(group2 - group1), dtype=int)
+                active_candidates2 = candidates2[self.active_agents[candidates2].astype(bool)]
+
+                if active_candidates1.size == 0 or active_candidates2.size == 0:
+                    raise ValueError("no active candidates in group pair")
+
+                agent_idx1 = int(np.random.choice(active_candidates1))
+                agent_idx2 = int(np.random.choice(active_candidates2))
 
             except ValueError:
-                print(
-                    f"Warning: Groups {group_idx1} and {group_idx2} couldn't be connected because all members already know each other."
+                logging.debug(
+                    f"Groups {group_idx1} and {group_idx2} couldn't be connected (no suitable active candidates) because all member already know each other."
                 )
 
             # Add agent 1 to agents 2's peer group and vice versa.
@@ -327,13 +336,13 @@ class PeerGroupEnvironment(ParallelEnv):
         # Peer collaboration: MultiBinary for peer group
         peer_group = self.peer_groups[self.agent_peer_idx[idx]]
         mask["collaborate_with"] = np.zeros(self.max_peer_group_size, dtype=np.int8)
-        mask["collaborate_with"][: len(peer_group)] = np.where(
-            self.active_agents[peer_group].astype(bool),
-            2,  ## if active unmask
-            mask["collaborate_with"][: len(peer_group)],  # else keep 0
-        )
-        if sum(mask["collaborate_with"]) == 0:
-            breakpoint()
+        # Only fill up to the smaller of the actual peer_group length and the mask capacity
+        pg = np.array(peer_group, dtype=int)
+        L = min(len(pg), self.max_peer_group_size)
+        if L > 0:
+            mask_slice = mask["collaborate_with"][:L]
+            active_slice = self.active_agents[pg[:L]].astype(bool)
+            mask["collaborate_with"][:L] = np.where(active_slice, 2, mask_slice)
 
         # Effort: can only put effort into active projects
         mask["put_effort"] = np.zeros(self.max_projects_per_agent + 1, dtype=np.int8)
@@ -615,14 +624,14 @@ class PeerGroupEnvironment(ParallelEnv):
                     agent_project_choices[idx] = open_proj_idx
 
             # Apply effort to running projects
-            if (
-                action["put_effort"] > 0
-                and len(self._get_active_projects(idx)) >= action["put_effort"]
-            ):
-
-                selected_project = action["put_effort"] - 1
-                effort_project_id = self.agent_active_projects[idx][selected_project]
-                if effort_project_id is not None:
+            if action["put_effort"] > 0:
+                selected_project = int(action["put_effort"]) - 1
+                # Ensure selected slot index is valid and contains a project id
+                if (
+                    0 <= selected_project < len(self.agent_active_projects[idx])
+                    and self.agent_active_projects[idx][selected_project] is not None
+                ):
+                    effort_project_id = self.agent_active_projects[idx][selected_project]
                     effort_project = self.projects[effort_project_id]
                     contributors_idx = (
                         list(effort_project.contributors).index(idx)
@@ -637,7 +646,7 @@ class PeerGroupEnvironment(ParallelEnv):
                     self.projects[effort_project_id].add_effort(effort_amount)
                     self.agent_project_effort[idx][effort_project_id] += effort_amount
                 else:
-                    print(f"Couldn't find project: {selected_project}")
+                    logging.debug(f"Couldn't find project slot {selected_project} for agent {idx}")
         # Collaboration intents (for each agent, with their peers)
         for peer_group in self.peer_groups:
             peer_group = np.array((peer_group))
@@ -682,6 +691,15 @@ class PeerGroupEnvironment(ParallelEnv):
                     collaborator_group = np.delete(
                         collaborator_group, not_enough_collaborators
                     )
+
+                    # Degree (number of mutual collaboration edges) per node
+                    degrees = np.sum(collaborators_intents, axis=0)
+                    # Indices of nodes with degree less than the collaborator_group size -> remove them
+                    to_remove_idx = np.where(degrees < len(collaborator_group))[0]
+                    if to_remove_idx.size > 0:
+                        collaborators_intents = np.delete(collaborators_intents, to_remove_idx, axis=0)
+                        collaborators_intents = np.delete(collaborators_intents, to_remove_idx, axis=1)
+                        collaborator_group = np.delete(collaborator_group, to_remove_idx)
 
                     self._find_project_setting(
                         choice, collaborator_group, collaborators_intents
@@ -848,7 +866,7 @@ class PeerGroupEnvironment(ParallelEnv):
         #     )
 
         if not all([a is not None for a in agents_activated_in_step]):
-            print("No more agents to activate!")
+            logging.debug("No more agents to activate!")
         # Prepare next obs/mask
         observations = {}
         for agent in self.agents:
@@ -928,7 +946,7 @@ class PeerGroupEnvironment(ParallelEnv):
             agent_open_projs[f"project_{i}"] = proj_obs
         return agent_open_projs
 
-    def _get_running_projects_obs(
+    def _get_running_projects_obs_old(
         self, agent_idx: int, peer_group: np.ndarray
     ) -> Dict[str, Dict[str, Any]]:
         # Projects the agent is currently working on
@@ -961,6 +979,48 @@ class PeerGroupEnvironment(ParallelEnv):
             running_obs[f"project_{p_idx}"] = p
         return running_obs
 
+    def _get_running_projects_obs(self, agent_idx: int, peer_group: np.ndarray) -> Dict[str, Dict[str, Any]]:
+        # Use the space as template to create stable empty entries
+        rp_space = self.observation_space(f"agent_{agent_idx}")["running_projects"]
+        running_obs = self._zeros_like_space(rp_space)  # dict with keys project_0..project_{max_projects_per_agent-1}
+
+        # Fill slots 0..max_projects_per_agent-1
+        for slot_i, proj_id in enumerate(self.agent_active_projects[agent_idx]):
+            if proj_id is None:
+                continue
+
+            p = self.projects[proj_id].as_observation_dict()
+
+            fit_among_peers = np.zeros(self.max_peer_group_size, dtype=np.float32)
+            effort_among_peers = np.zeros(self.max_peer_group_size, dtype=np.float32)
+            contributors_among_peers = np.zeros(self.max_peer_group_size, dtype=np.int8)
+
+            for i, agent_i in enumerate(peer_group):
+                contributors_index = (
+                    list(p["contributors"]).index(agent_i)
+                    if agent_i in p["contributors"]
+                    else None
+                )
+                if contributors_index is not None:
+                    contributors_among_peers[i] = 1
+                    fit_among_peers[i] = p["peer_fit"][contributors_index]
+                    effort_among_peers[i] = self.agent_project_effort[agent_i][proj_id]
+
+            # overwrite fields to match your observation_space schema
+            p["contributors"] = contributors_among_peers
+            p["peer_fit"] = fit_among_peers
+            p["contributor_effort"] = effort_among_peers
+            p["time_left"] = np.array(
+                [max(0, p["time_window"] - (self.timestep - p["start_time"]))],
+                dtype=np.int32,
+            )
+            del p["start_time"]
+            del p["time_window"]
+
+            running_obs[f"project_{slot_i}"] = p
+
+        return running_obs
+
     @functools.lru_cache(maxsize=None)
     def observation_space(self, agent: str) -> GymDict:
         space = GymDict(
@@ -972,7 +1032,7 @@ class PeerGroupEnvironment(ParallelEnv):
                     0, 1e4, (self.max_peer_group_size,), dtype=np.float32
                 ),
                 "peer_h_index": Box(
-                    0, 1e5, (self.max_peer_group_size,), dtype=np.int16
+                    0, np.iinfo(np.int16).max, (self.max_peer_group_size,), dtype=np.int16
                 ),
                 "peer_centroids": Box(
                     -1, 1, (self.max_peer_group_size, 2), dtype=np.float64
@@ -1038,3 +1098,22 @@ class PeerGroupEnvironment(ParallelEnv):
             }
         )
         return space
+
+    # ------------------------------
+    # Modified from original code in peer_group_environment.py to be compatible with RLlib's multi-agent API.
+    # ------------------------------
+    def _zeros_like_space(self, space):
+        # Recursive: build a zero observation matching a Gym space
+        if isinstance(space, GymDict):
+            return {k: self._zeros_like_space(s) for k, s in space.spaces.items()}
+        if isinstance(space, Box):
+            return np.zeros(space.shape, dtype=space.dtype)
+        if isinstance(space, MultiBinary):
+            # MultiBinary.n can be int or tuple
+            n = space.n if isinstance(space.n, tuple) else (space.n,)
+            return np.zeros(n, dtype=np.int8)
+        if isinstance(space, Discrete):
+            # Discrete isn't used in obs here, but keep it safe:
+            return np.array(0, dtype=np.int64)
+        raise TypeError(f"Unsupported space type: {type(space)}")
+
